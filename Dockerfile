@@ -10,6 +10,7 @@ RUN apk update && \
 
 USER node
 COPY --chown=node:node ./app /app
+
 WORKDIR /app
 
 ENV NPM_CONFIG_PREFIX=/home/node/.npm-global

@@ -2,7 +2,7 @@
 
 cd /app
 
-# Detect host user identity and address the permission
+# Detect host user identity and set the permission
 DOCKER_UID=`stat -c "%u" /home/node/.aws`
 DOCKER_GID=`stat -c "%g" /home/node/.aws`
 
@@ -11,7 +11,8 @@ groupadd -g ${DOCKER_GID} node
 useradd -g ${DOCKER_GID} --home-dir /home/node -s /bin/bash -u ${DOCKER_UID} node
 
 chown -R node:node /home/node/.config
-chown -R node:node cdk.context.json cdk.out
+chown node:node /app
+chown -R node:node cdk.out
 
 echo
 echo ╭━━━┳╮╱╱╱╱╱╭╮╭╮
@@ -31,7 +32,9 @@ echo '  3. Save the Webhook URL in SSM Parameter store as a SecureString (https:
 echo 
 read -p 'Are you ready (y/n)? ' ready
 if [[ ! ${ready} =~ ^[Yy]$ ]]; then
-    echo Good call!
+    echo
+    echo Good call. Bye!
+    echo
     exit 1
 fi
 echo 
