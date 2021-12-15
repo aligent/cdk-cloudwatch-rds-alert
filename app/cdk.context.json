@@ -1,0 +1,6 @@
+{
+  "security-group:account=082240998132:region=ap-southeast-2:securityGroupId=sg-9091f4dc": {
+    "securityGroupId": "sg-9091f4dc",
+    "allowAllOutbound": false
+  }
+}
