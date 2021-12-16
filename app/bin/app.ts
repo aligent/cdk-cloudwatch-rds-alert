@@ -18,12 +18,12 @@ if (typeof RDSINSTANCES === 'string'){
   var instances = RDSINSTANCES.split(',');
 }
 
-export class CloudwatchAlertStack extends Stack {
+export class CloudwatchRDSAlertStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const topic = new aws_sns.Topic(this, 'SNS');
-    
+
     for ( var i in instances) {
       const db = aws_rds.DatabaseInstance.fromDatabaseInstanceAttributes(this, instances[i], {
         instanceEndpointAddress: 'garbage value', // Can be an arbitrary value
@@ -69,7 +69,7 @@ export class CloudwatchAlertStack extends Stack {
 }
 
 const app = new App();
-new CloudwatchAlertStack(app, 'CloudwatchAlertStack', {
+new CloudwatchRDSAlertStack(app, 'CloudwatchRDSAlertStack', {
   env: {
     account: `${CDK_DEFAULT_ACCOUNT}`,
     region: `${CDK_DEFAULT_REGION}`
