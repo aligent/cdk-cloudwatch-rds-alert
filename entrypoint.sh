@@ -40,13 +40,14 @@ fi
 echo 
 read -p '- AWS Profile: ' profile
 read -p '- AWS RDS Instance Identifiers (comma-separated with no space in-between): ' instances
+read -p '- AWS SecurityGroup (Grab a random but valid one from your account. CDK just needs this): ' sg
 read -p '- SSM Parameter for the Webhook URL (e.g. /rds_monitor/webhook): ' webhook
 read -p '- Slack Alert Username [RDSAlert] : ' username
 username=${username:-RDSAlert}
 read -p '- Slack Alert Channel without "#" (Only needed for logging and debugging) : ' channel
 echo
 
-if [[ !(${profile} && ${instances} && ${webhook} && ${username} ) ]]; then
+if [[ !(${profile} && ${instances} && ${sg} && ${webhook} && ${username} ) ]]; then
     echo "All the parameters need to be provided. Exiting..."
     exit 1;
 fi

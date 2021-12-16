@@ -7,7 +7,7 @@ import * as path from 'path';
 // import { Subscription } from 'aws-cdk-lib/aws-sns';
 
 const RDSINSTANCES = process.env.RDSINSTANCES as string;
-// const SECURITYGROUP = process.env.SECURITYGROUP as string;
+const SECURITYGROUP = process.env.SECURITYGROUP as string;
 const CDK_DEFAULT_ACCOUNT = process.env.CDK_DEFAULT_ACCOUNT
 const CDK_DEFAULT_REGION = process.env.CDK_DEFAULT_REGION
 const WEBHOOK_URL_PARAMETER = process.env.WEBHOOK_URL_PARAMETER as string;
@@ -24,17 +24,12 @@ export class CloudwatchAlertStack extends Stack {
 
     const topic = new aws_sns.Topic(this, 'SNS');
     
-    // Create a dummy SecurityGroup in the default VPC
-    const vpc = aws_ec2.Vpc.fromLookup(this, "VPC",{ isDefault: true });
-    const sg = new aws_ec2.SecurityGroup(this, 'DummySG', { vpc });
-    
     for ( var i in instances) {
       const db = aws_rds.DatabaseInstance.fromDatabaseInstanceAttributes(this, instances[i], {
         instanceEndpointAddress: 'garbage value', // Can be an arbitrary value
         instanceIdentifier: instances[i], // CloudWatch looks out for this value
         port: 3306, // Can be an arbitrary value
-        securityGroups: [ sg ]
-        // securityGroups: [aws_ec2.SecurityGroup.fromLookupById(this, instances[i]+'-sg', `${SECURITYGROUP}`)] // SG ID has to be valid
+        securityGroups: [aws_ec2.SecurityGroup.fromLookupById(this, instances[i]+'-sg', `${SECURITYGROUP}`)] // SG ID has to be valid
       });
       // Only "Average over 5 minutes" is available, hence one evaluation only before firing the alarm off:
       // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseInstance.html#metricwbrcpuutilizationprops
