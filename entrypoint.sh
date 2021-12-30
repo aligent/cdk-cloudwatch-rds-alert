@@ -12,6 +12,7 @@ useradd -g ${DOCKER_GID} --home-dir /home/node -s /bin/bash -u ${DOCKER_UID} nod
 
 chown -R node:node /home/node/.config
 chown node:node /app
+chown -R node:node /app/cdk.out
 
 echo
 echo ╭━━━┳╮╱╱╱╱╱╭╮╭╮
