@@ -23,23 +23,23 @@ if [[ $# -gt 0 ]]; then # Headless mode
             profile="${2}"
             shift; shift
             ;;
-            --instances)
+            --rds-instances)
             instances="${2}"
             shift; shift
             ;;
-            --securitygroup)
+            --security-group)
             sg="${2}"
             shift; shift
             ;;
-            --webhookparameter)
+            --slack-webhook-url-ssm)
             webhookparameter="${2}"
             shift; shift
             ;;
-            --slackusername)
+            --slack-username)
             username="${2}"
             shift; shift
             ;;
-            --slackchannel)
+            --slack-channel)
             channel="${2}"
             shift; shift
             ;;
@@ -57,12 +57,12 @@ if [[ $# -gt 0 ]]; then # Headless mode
     if [[ !(${profile} && ${instances} && ${sg} && ${webhookparameter} && ${username:-RDSAlert} && ${channel}) ]]; then
         echo "Mandatory arguments:"
         echo -e "\t --profile AWS_PROFILE"
-        echo -e "\t --instances RDS_INSTANCE_ID(comma-separated if more than one)"
-        echo -e "\t --securitygroup SECURITY_GROUP"
-        echo -e "\t --webhookparameter AWS_PARAMETER_FOR_SLACK_WEBHOOK_URL"
-        echo -e "\t --slackchannel SLACK_CHANNEL"
+        echo -e "\t --rds-instances RDS_INSTANCE_ID(comma-separated if more than one)"
+        echo -e "\t --security-group SECURITY_GROUP"
+        echo -e "\t --slack-webhook-url-ssm AWS_SSM_PARAMETER_FOR_SLACK_WEBHOOK_URL"
+        echo -e "\t --slack-channel SLACK_CHANNEL"
         echo "Optional argument:"
-        echo -e "\t --slackusername SLACK_USERNAME (default: RDSAlert)"
+        echo -e "\t --slack-username SLACK_USERNAME (default: RDSAlert)"
         exit 1
     fi
 else # Interactive Mode
