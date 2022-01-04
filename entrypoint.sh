@@ -43,6 +43,14 @@ if [[ $# -gt 0 ]]; then # Headless mode
             channel="${2}"
             shift; shift
             ;;
+            --rds-preferred-names)
+            rds_preferred_names="${2}"
+            shift; shift
+            ;;
+            --cpu-alert-threshold)
+            cpu_alert_threshold="${2}"
+            shift; shift
+            ;;
             *)    # unknown option
             INVALIDARGS+=("${1}") # save it in an array for error message
             shift
@@ -61,8 +69,10 @@ if [[ $# -gt 0 ]]; then # Headless mode
         echo -e "\t --security-group SECURITY_GROUP"
         echo -e "\t --slack-webhook-url-ssm AWS_SSM_PARAMETER_FOR_SLACK_WEBHOOK_URL"
         echo -e "\t --slack-channel SLACK_CHANNEL"
-        echo "Optional argument:"
+        echo "Optional arguments:"
         echo -e "\t --slack-username SLACK_USERNAME (default: RDSAlert)"
+        echo -e "\t --rds-preferred-name RDS_INSTANCE_PREFERRED_NAMES (example: Production_DB,Preprod_DB)"
+        echo -e "\t --cpu-alert-threshold SLACK_USERNAME (default: 30 per cent)"
         exit 1
     fi
 else # Interactive Mode
@@ -92,11 +102,15 @@ else # Interactive Mode
     echo
     read -p '- AWS Profile: ' profile
     read -p '- AWS RDS Instance Identifiers (comma-separated with no space in-between): ' instances
+    read -p '- Instance Preferred Name to appear in the alert (Optional, comma-separated in the same order as Identifiers) : ' rds_preferrednames
+    rds_preferrednames=${rds_preferrednames:-instances}
     read -p '- AWS SecurityGroup (Grab a random but valid one from your account. CDK just needs this): ' sg
     read -p '- SSM Parameter for the Webhook URL (e.g. /rds_monitor/webhook): ' webhookparameter
     read -p '- Slack Alert Username [RDSAlert] : ' username
     username=${username:-RDSAlert}
     read -p '- Slack Alert Channel without "#" (Only needed for logging and debugging) : ' channel
+    read -p '- CPU Usage Alert Threshold in per cent [30] : ' cpu_alert_threshold
+    cpu_alert_threshold=${cpu_alert_threshold:-30}
     echo
 
     if [[ !(${profile} && ${instances} && ${sg} && ${webhookparameter} && ${username} && ${channel}) ]]; then
@@ -110,4 +124,5 @@ fi
 sudo -u node -- sh -c "\
 RDSINSTANCES=${instances} SECURITYGROUP=${sg} WEBHOOK_URL_PARAMETER=${webhookparameter} \
 ALERT_USERNAME=${username} ALERT_CHANNEL=${channel} \
+RDS_PREFERRED_NAMES=${rds_preferred_names} CPU_THRESHOLD=${cpu_alert_threshold} \
 cdk deploy --profile ${profile}"

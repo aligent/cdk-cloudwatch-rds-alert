@@ -27,7 +27,7 @@ It will ask a few parameters including:
 ### Headless Mode
 You can run a one-liner by specifying all the arguments required:
 
-`docker run --rm -it --volume ~/.aws:/home/node/.aws aligent/cdk-cloudwatch-rds-alert --profile <AWS_PROFILE> --rds-instances <RDS_INSTANCE_ID> --security-group <SECURITY_GROUP> --slack-webhook-url-ssm <AWS_SSM_PARAMETER_FOR_SLACK_WEBHOOK_URL> --slack-channel <SLACK_CHANNEL> [--slack-username <SLACK_USERNAME>]`
+`docker run --rm -it --volume ~/.aws:/home/node/.aws aligent/cdk-cloudwatch-rds-alert --profile <AWS_PROFILE> --rds-instances <RDS_INSTANCE_IDS> --security-group <SECURITY_GROUP> --slack-webhook-url-ssm <AWS_SSM_PARAMETER_FOR_SLACK_WEBHOOK_URL> --slack-channel <SLACK_CHANNEL> [--slack-username <SLACK_USERNAME>] [--rds-preferred-names <RDS_INSTANCE_PREFERRED_NAMES>] [--cpu-alert-threshold <THRESHOLD_PER_CENT>]`
 
 *Note: if you run the command once again against the same account with different parameters, the existing stack will be overwritten.*
 
