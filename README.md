@@ -13,8 +13,8 @@ Before moving on, make sure the below have been completed:
 - Create Slack Channel and Incoming Webhook URL (https://api.slack.com/messaging/webhooks)
 - Save the Webhook URL in SSM Parameter store (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html)
  
-
-Now, just run this command:
+### Interactive Mode:
+Just run this command for an interactive deployment:
 
 `docker run --rm -it --volume ~/.aws:/home/node/.aws aligent/cdk-cloudwatch-rds-alert`
 
@@ -24,13 +24,17 @@ It will ask a few parameters including:
 - SSM Parameter: the SSM parameter name where the Webhook URL is stored
 - Slack Alert User Name and Channel
 
-Repeat the command against other accounts/environments. 
+### Headless Mode
+You can run a one-liner by specifying all the arguments required:
 
-*Note: if you run the command once again against the same account with different parameters, the existing stack will be overwritten.* 
+`docker run --rm -it --volume ~/.aws:/home/node/.aws aligent/cdk-cloudwatch-rds-alert --profile <AWS_PROFILE> --rds-instances <RDS_INSTANCE_ID> --security-group <SECURITY_GROUP> --slack-webhook-url-ssm <AWS_SSM_PARAMETER_FOR_SLACK_WEBHOOK_URL> --slack-channel <SLACK_CHANNEL> [--slack-username <SLACK_USERNAME>]`
+
+*Note: if you run the command once again against the same account with different parameters, the existing stack will be overwritten.*
 
 ## Limitations
 The only available RDS CPU metric in CDK is "Average 5 over minutes". Therefore the alerts fire off with one violation.
 https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseInstance.html#metricwbrcpuutilizationprops
 
 ## Future updates
-- Additional monitoring metrics, e.g. per cent of max_connections.
+- Optional: DB alias and alert threshold
+- Additional monitoring metrics, e.g. per cent of max_connections
