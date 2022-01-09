@@ -4,7 +4,7 @@ import {  Stack, StackProps, App, Duration, aws_cloudwatch, aws_cloudwatch_actio
           aws_rds, aws_ec2, aws_sns, aws_sns_subscriptions, aws_lambda, aws_lambda_nodejs, aws_ssm } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as path from 'path';
-// import { Subscription } from 'aws-cdk-lib/aws-sns';
+import { exit } from "process";
 
 const RDSINSTANCES = process.env.RDSINSTANCES as string;
 const SECURITYGROUP = process.env.SECURITYGROUP as string;
@@ -13,9 +13,17 @@ const CDK_DEFAULT_REGION = process.env.CDK_DEFAULT_REGION
 const WEBHOOK_URL_PARAMETER = process.env.WEBHOOK_URL_PARAMETER as string;
 const ALERT_USERNAME = process.env.ALERT_USERNAME as string;
 const ALERT_CHANNEL = process.env.ALERT_CHANNEL as string;
+const RDS_PREFERRED_NAMES=process.env.RDS_PREFERRED_NAMES as string; // InstanceID-PreferredName mapping is handled within the Lambda function
+const CPU_THRESHOLD= Number(process.env.CPU_THRESHOLD);
 
-if (typeof RDSINSTANCES === 'string'){
-  var instances = RDSINSTANCES.split(',');
+var rdsIds = RDSINSTANCES.split(',');
+var rdsNames = RDS_PREFERRED_NAMES.split(',');
+// // If lengths do not match, log and exit
+if (rdsIds.length != rdsNames.length) {
+    console.log("Number of RDS IDs and preferred names don't match. Exiting...");
+    console.log("RDS ID input: " + rdsIds);
+    console.log("RDS Preferred Name input: " + rdsNames);
+    exit(1);
 }
 
 export class CloudwatchRDSAlertStack extends Stack {
@@ -24,20 +32,20 @@ export class CloudwatchRDSAlertStack extends Stack {
 
     const topic = new aws_sns.Topic(this, 'SNS');
 
-    for ( var i in instances) {
-      const db = aws_rds.DatabaseInstance.fromDatabaseInstanceAttributes(this, instances[i], {
+    for ( var i in rdsIds ) {
+      const db = aws_rds.DatabaseInstance.fromDatabaseInstanceAttributes(this, rdsIds[i], {
         instanceEndpointAddress: 'garbage value', // Can be an arbitrary value
-        instanceIdentifier: instances[i], // CloudWatch looks out for this value
+        instanceIdentifier: rdsIds[i], // CloudWatch looks out for this value
         port: 3306, // Can be an arbitrary value
-        securityGroups: [aws_ec2.SecurityGroup.fromLookupById(this, instances[i]+'-sg', `${SECURITYGROUP}`)] // SG ID has to be valid
+        securityGroups: [aws_ec2.SecurityGroup.fromLookupById(this, rdsIds[i]+'-sg', `${SECURITYGROUP}`)] // SG ID has to be valid
       });
       // Only "Average over 5 minutes" is available, hence one evaluation only before firing the alarm off:
       // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseInstance.html#metricwbrcpuutilizationprops
-      const alarm_cpu = new aws_cloudwatch.Alarm(this, instances[i]+'-alarm', {
-        alarmName: instances[i]+' database CPU usage alert', // Notification title if sent to Slack
+      const alarm_cpu = new aws_cloudwatch.Alarm(this, rdsIds[i]+'-alarm', {
+        alarmName: rdsIds[i]+' database CPU usage alert', // Notification title if sent to Slack
         evaluationPeriods: 1, // The number of periods over which data is compared to the specified threshold. ( 5 minute )
         datapointsToAlarm: 1, // The number of datapoints that must be breaching to trigger the alarm.
-        threshold: 30, // over x %
+        threshold: CPU_THRESHOLD, // over x %
         metric: db.metricCPUUtilization(),
         treatMissingData: aws_cloudwatch.TreatMissingData.BREACHING
       });
@@ -54,7 +62,9 @@ export class CloudwatchRDSAlertStack extends Stack {
       environment: {
         WEBHOOK_URL_PARAMETER: WEBHOOK_URL_PARAMETER,
         ALERT_USERNAME: ALERT_USERNAME,
-        ALERT_CHANNEL: ALERT_CHANNEL
+        ALERT_CHANNEL: ALERT_CHANNEL,
+        RDSINSTANCES: RDSINSTANCES,
+        RDS_PREFERRED_NAMES: RDS_PREFERRED_NAMES
       }
     });
 

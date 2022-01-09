@@ -4,10 +4,18 @@ import axios, { AxiosResponse } from "axios";
 const WEBHOOK_URL_PARAMETER = process.env.WEBHOOK_URL_PARAMETER as string;
 const ALERT_USERNAME = process.env.ALERT_USERNAME as string;
 const ALERT_CHANNEL = process.env.ALERT_CHANNEL as string;
+const RDSINSTANCES = process.env.RDSINSTANCES as string;
+const RDS_PREFERRED_NAMES = process.env.RDS_PREFERRED_NAMES as string;
+
+
+// Use a human-readable referred name for alert rather than random string of RDS ID
+var rdsIds = RDSINSTANCES.split(',');
+var rdsNames = RDS_PREFERRED_NAMES.split(',');
+// Combining the two arrays into an object for Instance ID lookup in AlertName string
+let rdsAssociations: { [key: string]: string; } = rdsIds.reduce((o, k, i) => ({...o, [k]: rdsNames[i]}), {});
 
 const AWS = require('aws-sdk');
 const SSM = new AWS.SSM();
-// var responseFromSSM = null;
 var parameter = {
     "Name" : WEBHOOK_URL_PARAMETER,
     "WithDecryption": true
@@ -24,9 +32,14 @@ export const getFormattedSlackMessage = (snsMessage: string) => {
     try {
         const obj = JSON.parse(snsMessage);
         const { AlarmName, StateChangeTime, NewStateReason, } = obj;
+        // Find RDS ID in AlarmName to replace it with the mapping human-readable name if provided
+        var newAlarmName = AlarmName;
+        Object.keys(rdsAssociations).forEach(key => {
+            newAlarmName = newAlarmName.replace(`${key}`, `${rdsAssociations[key]}`);
+          });
+        // Build Alert message
         return [
-            // CloudWatch Alarms
-            AlarmName && `*${AlarmName}*`,
+            newAlarmName && `*${newAlarmName}*`,
             StateChangeTime && `StateChangeTime: ${StateChangeTime}`,
             NewStateReason && `NewStateReason: ${NewStateReason}`,
             '----------------'
