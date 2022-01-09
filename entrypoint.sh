@@ -72,7 +72,7 @@ if [[ $# -gt 0 ]]; then # Headless mode
         echo "Optional arguments:"
         echo -e "\t --slack-username SLACK_USERNAME (default: RDSAlert)"
         echo -e "\t --rds-preferred-name RDS_INSTANCE_PREFERRED_NAMES (example: Production_DB,Preprod_DB)"
-        echo -e "\t --cpu-alert-threshold SLACK_USERNAME (default: 30 per cent)"
+        echo -e "\t --cpu-alert-threshold CPU_PERCENTAGE (default: 30 per cent)"
         exit 1
     fi
 else # Interactive Mode
