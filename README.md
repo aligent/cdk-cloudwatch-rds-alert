@@ -1,5 +1,8 @@
 # Create CloudWatch Alerts for RDS Instance CPU Usage
 
+## Archived
+Further updates can be found here https://github.com/aligent/cdk-stacks/tree/main/packages/cloudwatch-rds-alert
+
 ## Introduction
 This stack creates CloudWatch alerts for a given RDS instances and configure Slack notification for them, incorporating CDKv2.0.
 
